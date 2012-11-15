@@ -171,7 +171,7 @@ public class OMETiffWriter extends TiffWriter {
       }
       else {
         for(String k : ifdCounts.keySet())
-        ifdCounts.put(k, 0);
+          ifdCounts.put(k, 0);
       }
     }
   }
