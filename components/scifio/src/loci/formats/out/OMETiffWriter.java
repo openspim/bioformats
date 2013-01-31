@@ -86,6 +86,7 @@ public class OMETiffWriter extends TiffWriter {
   private OMEXMLMetadata omeMeta;
   private OMEXMLService service;
   private Map<String, Integer> ifdCounts = new HashMap<String, Integer>();
+  private boolean allowFullUpdate;
 
   private Map<String, String> uuids = new HashMap<String, String>();
 
@@ -93,6 +94,7 @@ public class OMETiffWriter extends TiffWriter {
 
   public OMETiffWriter() {
     super("OME-TIFF", new String[] {"ome.tif", "ome.tiff"});
+    setAllowFullUpdate(true);
   }
 
   // -- IFormatHandler API methods --
@@ -111,19 +113,8 @@ public class OMETiffWriter extends TiffWriter {
           populateImage(omeMeta, series);
         }
 
-        List<String> files = new ArrayList<String>();
-        for (String[] s : imageLocations) {
-          for (String f : s) {
-            if (!files.contains(f) && f != null) {
-              files.add(f);
-
-              String xml = getOMEXML(f);
-
-              // write OME-XML to the first IFD's comment
-              saveComment(f, xml);
-            }
-          }
-        }
+        if(isAllowFullUpdate())
+                updateSeriesMetadata();
       }
     }
     catch (DependencyException de) {
@@ -174,6 +165,22 @@ public class OMETiffWriter extends TiffWriter {
           ifdCounts.put(k, 0);
       }
     }
+  }
+
+  public void updateSeriesMetadata() throws IOException, FormatException {
+	  List<String> files = new ArrayList<String>();
+	  for (String[] s : imageLocations) {
+	    for (String f : s) {
+	      if (!files.contains(f) && f != null) {
+	        files.add(f);
+	
+	        String xml = getOMEXML(f);
+	
+	        // write OME-XML to the first IFD's comment
+	        saveComment(f, xml);
+	      }
+	    }
+	  }
   }
 
   // -- IFormatWriter API methods --
@@ -364,5 +371,13 @@ public class OMETiffWriter extends TiffWriter {
 
     return z * c * t;
   }
+
+	public boolean isAllowFullUpdate() {
+		return allowFullUpdate;
+	}
+	
+	public void setAllowFullUpdate(boolean allowFullUpdate) {
+		this.allowFullUpdate = allowFullUpdate;
+	}
 
 }
